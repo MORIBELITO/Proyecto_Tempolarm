@@ -1,5 +1,5 @@
 ![image](https://i.ytimg.com/vi/JV_p_IRB65A/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLC3OMrXvj9aDp_MA5ZCbu5qmErFLw)
-# Proyecto Tempolarm
+# PROYECTO TEMPOLARM
 ## Objetivos
 - **Desarrollar una aplicación de gestión de temporizadores:** El objetivo principal es crear una aplicación que permita a los usuarios configurar, controlar y utilizar temporizadores estándar y temporizadores Pomodoro de manera efectiva.
 - **Facilitar la gestión del tiempo:** El proyecto busca ayudar a los usuarios a administrar su tiempo de manera más eficiente mediante el uso de temporizadores configurables.
