@@ -27,6 +27,12 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         self.load_saved_configs()
         self.comboBoxConfigGuardadasTemp.currentIndexChanged.connect(self.load_selected_config)
 
+        # Configurar validadores para los QLineEdit
+        int_validator = QIntValidator(0, 59, self)
+        self.lineEdit_Horas_Temp.setValidator(int_validator)
+        self.lineEdit_Minutos_Temp.setValidator(int_validator)
+        self.lineEdit_Segundos_Temp.setValidator(int_validator)
+
         # Conexiones para Pomodoro
 
         # Cargar configuraciones guardadas en el comboBox
@@ -155,7 +161,6 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
         self.comboBoxRepetirAlarm.addItems(dias_semana)
 
-
     def switch_to_Regis_page(self):
         self.stackedWidget.setCurrentIndex(4)
 
@@ -168,12 +173,17 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
 
     ##CONFIGURACIÓN TEMPORIZADOR
 
-
     def start_timer(self):
         # Obtener tiempo ingresado
         horas = int(self.lineEdit_Horas_Temp.text()) if self.lineEdit_Horas_Temp.text() else 0
         minutos = int(self.lineEdit_Minutos_Temp.text()) if self.lineEdit_Minutos_Temp.text() else 0
         segundos = int(self.lineEdit_Segundos_Temp.text()) if self.lineEdit_Segundos_Temp.text() else 0
+
+        # Validar que al menos uno de los campos de tiempo sea mayor que 0
+        if horas == 0 and minutos == 0 and segundos == 0:
+            QMessageBox.information(self, "Campos vacíos",
+                                    "Por favor, ingrese un tiempo mayor que 0 en al menos uno de los campos.")
+            return
 
         # Configurar tiempo límite
         self.tiempo_limite = QTime(horas, minutos, segundos)
@@ -226,6 +236,16 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         segundos = int(self.lineEdit_Segundos_Temp.text()) if self.lineEdit_Segundos_Temp.text() else 0
         tono = self.comboBoxTonosAlarma_Temp.currentText()
 
+
+        # Validar que el nombre no esté vacío
+        if not nombre:
+            QMessageBox.information(self, "Ingrese nombre", "Ingrese nombre de su configuración.")
+            return
+
+        if horas == 0 and minutos == 0 and segundos == 0:
+            QMessageBox.information(self, "Campos vacíos",
+                                    "Por favor, ingrese un tiempo mayor que 0 en al menos uno de los campos.")
+            return
 
         # Verificar si el nombre ya existe en la base de datos
         temporizadores = obtener_temporizadores()
@@ -340,6 +360,19 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         numero_periodos = self.spinBox_tmpPeriodos.value()
         tono_alarma = self.comboBoxtonoAlarmaPom.currentText()
         nombre = self.lineEdit_NombrePom.text()
+
+        # Validar que el nombre no esté vacío
+        if not nombre:
+            QMessageBox.information(self, "Ingrese nombre", "Ingrese nombre de su configuración.")
+            return
+
+        # Verificar si el nombre ya existe en la base de datos
+        pomodoros = obtener_pomodoros()
+        for pomodoro in pomodoros:
+            if pomodoro.nombre == nombre:
+                QMessageBox.information(self, "Nombre ya existe",
+                                        "Una configuración con ese nombre ya existe. Por favor, elija otro nombre.")
+                return
 
         # Guardar en la base de datos
         crear_pomodoro(minutos_pomodoro, segundos_pomodoro, tiempo_pomodoro, tiempo_descanso_corto,
@@ -502,6 +535,11 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         correo = self.lineEdit_Correo.text()
         telefono = self.lineEdit_Telefono.text()
 
+        # Validar que no haya campos vacíos
+        if not username or not password or not correo or not telefono:
+            QMessageBox.critical(self, "Error", "Por favor, completa todos los campos.")
+            return
+
         # Guardar en la base de datos usando la función del modelo
         crear_usuario(username, password, correo, telefono)
 
@@ -533,6 +571,9 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         # Obtener nombre de usuario seleccionado del ComboBox
         username = self.comboBox_SelectUser.currentText()
 
+        if not username:
+            QMessageBox.critical(self, "Error", "Por favor, selecciona usuario.")
+            return
 
         # Confirmar con el usuario antes de borrar
         reply = QMessageBox.question(self, 'Confirmar Borrado', f"¿Estás seguro de borrar al usuario {username}?",
