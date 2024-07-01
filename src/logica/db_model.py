@@ -7,6 +7,16 @@ engine = create_engine('sqlite:///base_de_datos.db', echo=True)
 # Define la clase base para las clases de modelos
 Base = declarative_base()
 
+# Definir el modelo de la tabla Usuarios
+class Usuario(Base):
+    __tablename__ = 'usuarios'
+
+    id = Column(Integer, primary_key=True)
+    username = Column(String)
+    password = Column(String)
+    correo = Column(String)
+    telefono = Column(String)
+
 class Temporizador(Base):
     __tablename__ = 'temporizador'
 
@@ -44,6 +54,36 @@ class Alarma(Base):
 # Crear la tabla en la base de datos
 Base.metadata.create_all(engine)
 
+# Función para crear un nuevo usuario en la base de datos
+def crear_usuario(username, password, correo, telefono):
+    from sqlalchemy.orm import sessionmaker
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    nuevo_usuario = Usuario(username=username, password=password, correo=correo, telefono=telefono)
+    session.add(nuevo_usuario)
+    session.commit()
+    session.close()
+
+# Función para obtener todos los usuarios de la base de datos
+def obtener_usuarios():
+    from sqlalchemy.orm import sessionmaker
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    usuarios = session.query(Usuario).all()
+    session.close()
+    return usuarios
+
+def borrar_usuario(username):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    usuario = session.query(Usuario).filter_by(username=username).first()
+    if usuario:
+        session.delete(usuario)
+        session.commit()
+        session.close()
+    else:
+        session.close()
+        raise Exception(f"No se encontró el usuario con nombre de usuario '{username}' en la base de datos.")
 
 
 ##************************************************************************************************************************

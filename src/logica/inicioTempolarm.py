@@ -2,6 +2,7 @@ from Proyecto_Tempolarm.src.vista.menuGUI import Ui_MainWindow
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem
 from PySide6.QtCore import QTime, QTimer
 from PySide6.QtGui import QIntValidator
+from Proyecto_Tempolarm.src.logica.db_model import crear_usuario, obtener_usuarios, borrar_usuario
 from Proyecto_Tempolarm.src.logica.db_model import crear_temporizador, obtener_temporizadores
 from Proyecto_Tempolarm.src.logica.db_model import crear_pomodoro, obtener_pomodoros
 from Proyecto_Tempolarm.src.logica.db_model import crear_alarma, obtener_alarmas
@@ -392,3 +393,74 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         msg_box.setWindowTitle("Notificación")
         msg_box.setText(message)
         msg_box.exec()
+
+
+    ##CONFIGURACION USUARIO
+
+    def actualizar_combo_usuarios(self):
+        # Limpiar ComboBox antes de actualizar
+        self.comboBox_SelectUser.clear()
+
+        # Obtener usuarios de la base de datos
+        usuarios = obtener_usuarios()
+
+        # Llenar ComboBox con nombres de usuario
+        for usuario in usuarios:
+            self.comboBox_SelectUser.addItem(usuario.username)
+
+    def guardar_usuario(self):
+        # Obtener datos de los lineEdit
+        username = self.lineEdit_Username.text()
+        password = self.lineEdit_Pass.text()
+        correo = self.lineEdit_Correo.text()
+        telefono = self.lineEdit_Telefono.text()
+
+        # Guardar en la base de datos usando la función del modelo
+        crear_usuario(username, password, correo, telefono)
+
+        # Actualizar ComboBox con el nuevo usuario
+        self.actualizar_combo_usuarios()
+
+        # Mostrar información en los QLabel
+        self.lblUsername.setText(f' {username}')
+        self.lblPass.setText(f' {password}')
+        self.lblcorreo.setText(f' {correo}')
+        self.lblTelefono.setText(f' {telefono}')
+
+    def mostrar_usuario_seleccionado(self, index):
+        # Obtener nombre de usuario seleccionado del ComboBox
+        username = self.comboBox_SelectUser.currentText()
+
+        # Obtener datos del usuario seleccionado de la base de datos
+        usuarios = obtener_usuarios()
+        for usuario in usuarios:
+            if usuario.username == username:
+                # Mostrar datos del usuario en los QLabel
+                self.lblUsername.setText(f': {usuario.username}')
+                self.lblPass.setText(f': {usuario.password}')
+                self.lblcorreo.setText(f': {usuario.correo}')
+                self.lblTelefono.setText(f': {usuario.telefono}')
+                break
+
+    def borrar_usuario_seleccionado(self):
+        # Obtener nombre de usuario seleccionado del ComboBox
+        username = self.comboBox_SelectUser.currentText()
+
+
+        # Confirmar con el usuario antes de borrar
+        reply = QMessageBox.question(self, 'Confirmar Borrado', f"¿Estás seguro de borrar al usuario {username}?",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+            # Borrar usuario de la base de datos
+            borrar_usuario(username)
+            QMessageBox.information(self, 'Usuario Borrado', f'El usuario {username} ha sido borrado.')
+
+            # Limpiar datos mostrados
+            self.lblUsername.setText('Nuevo Nombre')
+            self.lblPass.setText('Nueva Contraseña')
+            self.lblcorreo.setText('Nuevo Correo')
+            self.lblTelefono.setText('Nuevo Teléfono')
+
+            # Actualizar ComboBox después de borrar
+            self.actualizar_combo_usuarios()
