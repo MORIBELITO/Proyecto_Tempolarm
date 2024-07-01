@@ -1377,13 +1377,6 @@ background-color: rgb(111, 1, 1);</string>
                </layout>
               </item>
               <item>
-               <widget class="QLabel" name="label_26">
-                <property name="text">
-                 <string>Formato en 24 horas:</string>
-                </property>
-               </widget>
-              </item>
-              <item>
                <layout class="QHBoxLayout" name="horizontalLayout_25">
                 <property name="spacing">
                  <number>0</number>
@@ -1398,14 +1391,33 @@ background-color: rgb(111, 1, 1);</string>
                  <number>35</number>
                 </property>
                 <item>
-                 <widget class="QLabel" name="Formato_am_pm">
+                 <widget class="QComboBox" name="comboBox">
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>40</height>
+                   </size>
+                  </property>
                   <property name="styleSheet">
                    <string notr="true">text-align:center;
-font: 75 36pt &quot;Century Gothic&quot;;</string>
+font: 75 20pt &quot;Century Gothic&quot;;</string>
                   </property>
-                  <property name="text">
-                   <string>AM</string>
+                  <property name="iconSize">
+                   <size>
+                    <width>40</width>
+                    <height>40</height>
+                   </size>
                   </property>
+                  <item>
+                   <property name="text">
+                    <string>AM</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>PM</string>
+                   </property>
+                  </item>
                  </widget>
                 </item>
                 <item>

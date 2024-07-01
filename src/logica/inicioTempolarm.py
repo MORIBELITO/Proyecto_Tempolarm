@@ -16,12 +16,26 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         #Ocultar barra iconos
         self.frame_Iconos.setHidden(True)
 
-        # Conexiones para Temp_page
+        ##CONFIG TEMP
+
+        # Inicializar variables de estado
+        self.timer_paused = False
+        self.timer_running = False
+
+        # Conectar botones con funciones
         self.btn_Iniciar_Temp.clicked.connect(self.start_timer)
         self.btn_Pausa_Temp.clicked.connect(self.pause_timer)
         self.btn_Reiniciar_Temp.clicked.connect(self.reset_timer)
         self.btn_Guardar_Temp.clicked.connect(self.save_timer)
         self.btn_Limpiar_Temp.clicked.connect(self.clear_fields)
+
+        # Conectar cambios en los campos especificados
+        self.lineEdit_Horas_Temp.textChanged.connect(self.handle_time_change)
+        self.lineEdit_Minutos_Temp.textChanged.connect(self.handle_time_change)
+        self.lineEdit_Segundos_Temp.textChanged.connect(self.handle_time_change)
+        self.comboBoxTonosAlarma_Temp.currentIndexChanged.connect(self.handle_time_change)
+        self.lineEdit_NombreTemp.textChanged.connect(self.handle_time_change)
+        self.comboBoxConfigGuardadasTemp.currentIndexChanged.connect(self.handle_time_change)
 
         # Cargar configuraciones guardadas en el comboBox
         self.load_saved_configs()
@@ -33,11 +47,18 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         self.lineEdit_Minutos_Temp.setValidator(int_validator)
         self.lineEdit_Segundos_Temp.setValidator(int_validator)
 
+        self.using_saved_config = False  # Bandera para verificar si se está usando una configuración guardada
+
+
         # Conexiones para Pomodoro
 
         # Cargar configuraciones guardadas en el comboBox
         self.load_saved_configs_Pom()
         self.comboBoxConfigGuardadasPom.currentIndexChanged.connect(self.load_selected_config_Pom)
+
+        # Configurar los campos como solo lectura
+        self.lineEdit_Minutos_Pom.setReadOnly(True)
+        self.lineEdit_Segundos_Pom.setReadOnly(True)
 
         self.btn_Iniciar_Pom.clicked.connect(self.start_pomodoro)
         self.btn_Pausa_Pom.clicked.connect(self.pause_pomodoro)
@@ -46,6 +67,10 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         # Configurar botones
         self.btn_Guardar_Pom.clicked.connect(self.save_pomodoro)
         self.btn_Limpiar_Pom.clicked.connect(self.clear_pomodoro_fields)
+
+        # Inicializar variables de estado
+        self.pomodoro_paused = False
+        self.pomodoro_running = False
 
         ##CONEXIONES ALARMA
 
@@ -185,6 +210,12 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
                                     "Por favor, ingrese un tiempo mayor que 0 en al menos uno de los campos.")
             return
 
+        if minutos > 60 or segundos > 60:
+            QMessageBox.information(self, "Ingrese dentro de rango", "Ingrese min < 60 o seg < 60.")
+            self.lineEdit_Minutos_Temp.setText("00")
+            self.lineEdit_Segundos_Temp.setText("00")
+            return
+
         # Configurar tiempo límite
         self.tiempo_limite = QTime(horas, minutos, segundos)
 
@@ -192,6 +223,11 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         if not self.timer.isActive() and not self.timer_paused:
             self.tiempo_actual = QTime(0, 0, 0)
             self.timer.start(1000)  # Actualizar cada segundo
+            self.timer_running = True
+            self.set_fields_enabled(False)
+        elif self.timer_paused:
+            self.timer.start(1000)
+            self.timer_paused = False
 
 
     def pause_timer(self):
@@ -202,6 +238,7 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
             self.timer.start(1000)  # Reanudar el temporizador
             self.timer_paused = False
 
+
     def reset_timer(self):
         self.timer.stop()
         self.tiempo_limite = QTime(0, 0, 0)
@@ -210,6 +247,8 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         self.lineEdit_Minutos_Temp.setText("00")
         self.lineEdit_Segundos_Temp.setText("00")
         self.timer_paused = False  # Reiniciar bandera de pausa
+        self.timer_running = False
+        self.set_fields_enabled(True)
 
     def update_timer_display(self):
         if not self.timer_paused:
@@ -224,6 +263,8 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         # Comprobar si se alcanzó el tiempo límite
         if self.tiempo_actual >= self.tiempo_limite:
             self.timer.stop()
+            self.timer_running = False
+            self.set_fields_enabled(True)
             # Aquí podrías agregar la lógica para reproducir el tono de alarma seleccionado
             QMessageBox.information(self, "Tiempo Finalizado", "El tiempo termino.")
             return
@@ -235,7 +276,6 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         minutos = int(self.lineEdit_Minutos_Temp.text()) if self.lineEdit_Minutos_Temp.text() else 0
         segundos = int(self.lineEdit_Segundos_Temp.text()) if self.lineEdit_Segundos_Temp.text() else 0
         tono = self.comboBoxTonosAlarma_Temp.currentText()
-
 
         # Validar que el nombre no esté vacío
         if not nombre:
@@ -261,12 +301,15 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         # Recargar las configuraciones guardadas en el combo box
         self.load_saved_configs()
 
+
     def clear_fields(self):
         self.lineEdit_Horas_Temp.setText("00")
         self.lineEdit_Minutos_Temp.setText("00")
         self.lineEdit_Segundos_Temp.setText("00")
         self.lineEdit_NombreTemp.clear()
         self.comboBoxTonosAlarma_Temp.setCurrentIndex(0)
+        self.comboBoxConfigGuardadasTemp.setCurrentIndex(0)  # Restablecer comboBoxConfigGuardadasTemp a su estado inicial
+        self.using_saved_config = False  # Reiniciar bandera después de limpiar
 
     def load_saved_configs(self):
         # Obtener configuraciones guardadas de la base de datos
@@ -290,32 +333,62 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
             self.lineEdit_Minutos_Temp.setText(str(temporizador.minutos).zfill(2))
             self.lineEdit_Segundos_Temp.setText(str(temporizador.segundos).zfill(2))
             self.comboBoxTonosAlarma_Temp.setCurrentText(temporizador.tono)
+
+            # Establecer la bandera de configuración guardada
+            self.using_saved_config = True
+
         else:
             self.clear_fields()
+
+    def set_fields_enabled(self, enabled):
+        self.lineEdit_Horas_Temp.setEnabled(enabled)
+        self.lineEdit_Minutos_Temp.setEnabled(enabled)
+        self.lineEdit_Segundos_Temp.setEnabled(enabled)
+        self.comboBoxTonosAlarma_Temp.setEnabled(enabled)
+        self.lineEdit_NombreTemp.setEnabled(enabled)
+        self.btn_Guardar_Temp.setEnabled(enabled)
+        self.btn_Limpiar_Temp.setEnabled(enabled)
+        self.comboBoxConfigGuardadasTemp.setEnabled(enabled)
+
+    def handle_time_change(self):
+        if self.timer_running:
+            self.pause_timer()
 
     ##CONFIGURACIÓN POMODORO
 
     #CONFIGURACIÓN BOTONES
     def start_pomodoro(self):
-        if not self.pomodoro_timer.isActive():
+        if not self.pomodoro_timer.isActive() and not self.pomodoro_paused:
             self.pomodoro_running = True
             self.update_pomodoro_duration()
             self.pomodoro_timer.start(1000)  # Inicia el timer con intervalo de 1 segundo
+            self.set_fields_enabled(False)
+        elif self.pomodoro_paused:
+            self.pomodoro_timer.start(1000)
+            self.pomodoro_paused = False
+
 
     def pause_pomodoro(self):
-        self.pomodoro_timer.stop()
+        if self.pomodoro_timer.isActive():
+            self.pomodoro_timer.stop()
+            self.pomodoro_paused = True
+        else:
+            self.pomodoro_timer.start(1000)
+            self.pomodoro_paused = False
 
     def reset_pomodoro(self):
         self.pomodoro_timer.stop()
         self.pomodoro_running = False
+        self.pomodoro_paused = False
         self.pomodoro_count = 0
         self.current_pomodoro_type = 'Pomodoro'
         self.update_pomodoro_duration()
         self.update_pomodoro_display()
+        self.set_fields_enabled(True)
 
     # EN LA PANTALLA
     def update_pomodoro_display(self):
-        if self.pomodoro_running:
+        if self.pomodoro_running and not self.pomodoro_paused:
             self.pomodoro_duration = self.pomodoro_duration.addSecs(-1)
             if self.pomodoro_duration == QTime(0, 0, 0):
                 self.show_notification(self.current_pomodoro_type + ' terminado')
@@ -382,14 +455,16 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         self.load_saved_configs_Pom()
 
     def clear_pomodoro_fields(self):
-        self.lineEdit_Minutos_Pom.clear()
-        self.lineEdit_Segundos_Pom.clear()
+        self.lineEdit_Minutos_Pom.setText("20")
+        self.lineEdit_Segundos_Pom.setText("00")
+        self.comboBoxConfigGuardadasPom.setCurrentIndex(0)
         self.spinBox_tmpPomodoro.setValue(25)
         self.spinBox_tmpDescanso.setValue(5)
         self.spinBox_tmpDescLargo.setValue(15)
         self.spinBox_tmpPeriodos.setValue(4)
         self.comboBoxtonoAlarmaPom.setCurrentIndex(0)
         self.lineEdit_NombrePom.clear()
+
 
     def load_saved_configs_Pom(self):
         # Obtener configuraciones guardadas de la base de datos
@@ -419,10 +494,41 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         else:
             self.clear_fields()  # Define esta función para limpiar los campos del formulario
 
+
+    def set_fields_enabled(self, enabled):
+        self.spinBox_tmpPomodoro.setEnabled(enabled)
+        self.spinBox_tmpDescanso.setEnabled(enabled)
+        self.spinBox_tmpDescLargo.setEnabled(enabled)
+        self.spinBox_tmpPeriodos.setEnabled(enabled)
+        self.comboBoxtonoAlarmaPom.setEnabled(enabled)
+        self.lineEdit_NombrePom.setEnabled(enabled)
+        self.btn_Guardar_Pom.setEnabled(enabled)
+        self.btn_Limpiar_Pom.setEnabled(enabled)
+        self.comboBoxConfigGuardadasPom.setEnabled(enabled)
+
+    def handle_time_change(self):
+        if self.pomodoro_running:
+            self.pause_pomodoro()
+            self.update_pomodoro_duration()
+
 #####ALARMA
 
-
     def save_alarm(self):
+
+        # Obtener valores de los campos
+        horas_text = self.lineEdit_Horas_Alarm.text()
+        minutos_text = self.lineEdit_Minutos_Alarm.text()
+
+        # Validar que los campos de horas y minutos contengan solo dígitos
+        if not horas_text.isdigit() or not minutos_text.isdigit():
+            QMessageBox.information(self, "Entrada no válida",
+                                    "Por favor, ingrese solo números en los campos de horas y minutos.")
+
+            self.lineEdit_Horas_Alarm.setText("00")
+            self.lineEdit_Minutos_Alarm.setText("00")
+
+            return
+
         # Obtener valores de los campos
         horas_alarma = int(self.lineEdit_Horas_Alarm.text()) if self.lineEdit_Horas_Alarm.text() else 0
         minutos_alarma = int(self.lineEdit_Minutos_Alarm.text()) if self.lineEdit_Minutos_Alarm.text() else 0
@@ -433,6 +539,16 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         # Validar que el nombre no esté vacío
         if not nombre_alarma:
             QMessageBox.information(self, "Ingrese nombre", "Ingrese nombre de su configuración.")
+            return
+
+        if not (0 <= horas_alarma <= 24):
+            QMessageBox.information(self, "Ingrese Horas valdias", "Ingrese Horas Válidas.")
+            self.lineEdit_Horas_Alarm.setText("00")
+            return
+
+        if not (0 <= minutos_alarma <= 59):
+            QMessageBox.information(self, "Ingrese Minutos valdios", "Ingrese Minutos valdios.")
+            self.lineEdit_Minutos_Alarm.setText("00")
             return
 
         if horas_alarma == 0 and minutos_alarma == 0:
