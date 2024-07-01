@@ -2,6 +2,9 @@ from Proyecto_Tempolarm.src.vista.menuGUI import Ui_MainWindow
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem
 from PySide6.QtCore import QTime, QTimer
 from PySide6.QtGui import QIntValidator
+from Proyecto_Tempolarm.src.logica.db_model import crear_temporizador, obtener_temporizadores
+from Proyecto_Tempolarm.src.logica.db_model import crear_pomodoro, obtener_pomodoros
+from Proyecto_Tempolarm.src.logica.db_model import crear_alarma, obtener_alarmas
 
 class Mysidebar(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -78,12 +81,30 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
 
     def switch_to_Temp_page(self):
         self.stackedWidget.setCurrentIndex(1)
+        self.reset_timer()  # Reinicia el contador al cambiar a esta página
+
+        # Actualiza ComboBox de tonos de alarma al cambiar a la página de temporizador
+        self.comboBoxTonosAlarma_Temp.clear()
+        self.comboBoxTonosAlarma_Temp.addItems(["Tono 1", "Tono 2", "Tono 3", "Tono 4"])
+
 
     def switch_to_Pom_page(self):
         self.stackedWidget.setCurrentIndex(2)
+        self.reset_pomodoro()  # Reinicia el contador Pomodoro al cambiar a esta página
+        ##Alarma
+        self.comboBoxtonoAlarmaPom.clear()
+        self.comboBoxtonoAlarmaPom.addItems(["Tono 1", "Tono 2", "Tono 3", "Tono 4"])
+
 
     def switch_to_Alarm_page(self):
         self.stackedWidget.setCurrentIndex(3)
+        # Actualiza ComboBox de tonos de alarma al cambiar a la página de Alarma
+        self.comboBoxTonosAlarma_Alarm.clear()
+        self.comboBoxTonosAlarma_Alarm.addItems(["Tono 1", "Tono 2", "Tono 3", "Tono 4"])
+
+        self.comboBoxRepetirAlarm.clear()
+        dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+        self.comboBoxRepetirAlarm.addItems(dias_semana)
 
 
     def switch_to_Regis_page(self):
@@ -148,6 +169,61 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, "Tiempo Finalizado", "El tiempo termino.")
             return
 
+    def save_timer(self):
+        # Obtener valores de los campos
+        nombre = self.lineEdit_NombreTemp.text()
+        horas = int(self.lineEdit_Horas_Temp.text()) if self.lineEdit_Horas_Temp.text() else 0
+        minutos = int(self.lineEdit_Minutos_Temp.text()) if self.lineEdit_Minutos_Temp.text() else 0
+        segundos = int(self.lineEdit_Segundos_Temp.text()) if self.lineEdit_Segundos_Temp.text() else 0
+        tono = self.comboBoxTonosAlarma_Temp.currentText()
+
+
+        # Verificar si el nombre ya existe en la base de datos
+        temporizadores = obtener_temporizadores()
+        for temp in temporizadores:
+            if temp.nombre == nombre:
+                QMessageBox.information(self, "Nombre ya existe",
+                                        "Una configuración con ese nombre ya existe. Por favor, elija otro nombre.")
+                return
+
+        # Guardar en la base de datos
+        crear_temporizador(nombre, horas, minutos, segundos, tono)
+
+        # Recargar las configuraciones guardadas en el combo box
+        self.load_saved_configs()
+
+    def clear_fields(self):
+        self.lineEdit_Horas_Temp.setText("00")
+        self.lineEdit_Minutos_Temp.setText("00")
+        self.lineEdit_Segundos_Temp.setText("00")
+        self.lineEdit_NombreTemp.clear()
+        self.comboBoxTonosAlarma_Temp.setCurrentIndex(0)
+
+    def load_saved_configs(self):
+        # Obtener configuraciones guardadas de la base de datos
+        temporizadores = obtener_temporizadores()
+
+        # Limpiar comboBox y agregar configuraciones guardadas
+        self.comboBoxConfigGuardadasTemp.clear()
+        self.comboBoxConfigGuardadasTemp.addItem("Seleccione una configuración", None)
+        for temp in temporizadores:
+            self.comboBoxConfigGuardadasTemp.addItem(temp.nombre, temp)
+
+    def load_selected_config(self):
+        # Obtener la configuración seleccionada
+        index = self.comboBoxConfigGuardadasTemp.currentIndex()
+        if index > 0:  # Ignorar el índice 0 que es "Seleccione una configuración"
+            temporizador = self.comboBoxConfigGuardadasTemp.itemData(index)
+
+            # Cargar la configuración en los campos del temporizador
+            self.lineEdit_NombreTemp.setText(temporizador.nombre)
+            self.lineEdit_Horas_Temp.setText(str(temporizador.horas).zfill(2))
+            self.lineEdit_Minutos_Temp.setText(str(temporizador.minutos).zfill(2))
+            self.lineEdit_Segundos_Temp.setText(str(temporizador.segundos).zfill(2))
+            self.comboBoxTonosAlarma_Temp.setCurrentText(temporizador.tono)
+        else:
+            self.clear_fields()
+
     ##CONFIGURACIÓN POMODORO
 
     #CONFIGURACIÓN BOTONES
@@ -204,3 +280,115 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         # Asegurarse de que la interfaz se actualice al reiniciar
         self.lineEdit_Minutos_Pom.setText(self.pomodoro_duration.toString("mm"))
         self.lineEdit_Segundos_Pom.setText(self.pomodoro_duration.toString("ss"))
+
+    def save_pomodoro(self):
+        # Obtener valores de los campos
+        minutos_pomodoro = int(self.lineEdit_Minutos_Pom.text()) if self.lineEdit_Minutos_Pom.text() else 0
+        segundos_pomodoro = int(self.lineEdit_Segundos_Pom.text()) if self.lineEdit_Segundos_Pom.text() else 0
+        tiempo_pomodoro = self.spinBox_tmpPomodoro.value()
+        tiempo_descanso_corto = self.spinBox_tmpDescanso.value()
+        tiempo_descanso_largo = self.spinBox_tmpDescLargo.value()
+        numero_periodos = self.spinBox_tmpPeriodos.value()
+        tono_alarma = self.comboBoxtonoAlarmaPom.currentText()
+        nombre = self.lineEdit_NombrePom.text()
+
+        # Guardar en la base de datos
+        crear_pomodoro(minutos_pomodoro, segundos_pomodoro, tiempo_pomodoro, tiempo_descanso_corto,
+                       tiempo_descanso_largo, numero_periodos, tono_alarma, nombre)
+
+        # Recargar las configuraciones guardadas en el combo box
+        self.load_saved_configs_Pom()
+
+    def clear_pomodoro_fields(self):
+        self.lineEdit_Minutos_Pom.clear()
+        self.lineEdit_Segundos_Pom.clear()
+        self.spinBox_tmpPomodoro.setValue(25)
+        self.spinBox_tmpDescanso.setValue(5)
+        self.spinBox_tmpDescLargo.setValue(15)
+        self.spinBox_tmpPeriodos.setValue(4)
+        self.comboBoxtonoAlarmaPom.setCurrentIndex(0)
+        self.lineEdit_NombrePom.clear()
+
+    def load_saved_configs_Pom(self):
+        # Obtener configuraciones guardadas de la base de datos
+        pomodoros = obtener_pomodoros()
+
+        # Limpiar comboBox y agregar configuraciones guardadas
+        self.comboBoxConfigGuardadasPom.clear()
+        self.comboBoxConfigGuardadasPom.addItem("Seleccione una configuración", None)
+        for pomodoro in pomodoros:
+            self.comboBoxConfigGuardadasPom.addItem(pomodoro.nombre, pomodoro)
+
+    def load_selected_config_Pom(self):
+        # Obtener la configuración seleccionada
+        index = self.comboBoxConfigGuardadasPom.currentIndex()
+        if index > 0:  # Ignorar el índice 0 que es "Seleccione una configuración"
+            pomodoro = self.comboBoxConfigGuardadasPom.itemData(index)
+
+            # Cargar la configuración en los campos del Pomodoro
+            self.lineEdit_NombrePom.setText(pomodoro.nombre)
+            self.lineEdit_Minutos_Pom.setText(str(pomodoro.minutos_pomodoro).zfill(2))
+            self.lineEdit_Segundos_Pom.setText(str(pomodoro.segundos_pomodoro).zfill(2))
+            self.spinBox_tmpPomodoro.setValue(pomodoro.tiempo_pomodoro)
+            self.spinBox_tmpDescanso.setValue(pomodoro.tiempo_descanso_corto)
+            self.spinBox_tmpDescLargo.setValue(pomodoro.tiempo_descanso_largo)
+            self.spinBox_tmpPeriodos.setValue(pomodoro.numero_periodos)
+            self.comboBoxtonoAlarmaPom.setCurrentText(pomodoro.tono_alarma)
+        else:
+            self.clear_fields()  # Define esta función para limpiar los campos del formulario
+
+#####ALARMA
+
+
+    def save_alarm(self):
+        # Obtener valores de los campos
+        horas_alarma = int(self.lineEdit_Horas_Alarm.text()) if self.lineEdit_Horas_Alarm.text() else 0
+        minutos_alarma = int(self.lineEdit_Minutos_Alarm.text()) if self.lineEdit_Minutos_Alarm.text() else 0
+        tono_alarma = self.comboBoxTonosAlarma_Alarm.currentText()
+        nombre_alarma = self.lineEdit_NombreAlarm.text()
+        repetir_alarma = self.comboBoxRepetirAlarm.currentText()
+
+        # Validar que el nombre no esté vacío
+        if not nombre_alarma:
+            QMessageBox.information(self, "Ingrese nombre", "Ingrese nombre de su configuración.")
+            return
+
+        if horas_alarma == 0 and minutos_alarma == 0:
+            QMessageBox.information(self, "Campos vacíos",
+                                    "Por favor, ingrese un tiempo mayor que 0 en al menos uno de los campos.")
+            return
+
+        # Verificar si el nombre ya existe en la base de datos
+        alarmas = obtener_alarmas()
+        for alarma in alarmas:
+            if alarma.nombre == nombre_alarma:
+                QMessageBox.information(self, "Nombre ya existe",
+                                        "Una configuración con ese nombre ya existe. Por favor, elija otro nombre.")
+                return
+
+        # Guardar en la base de datos
+        crear_alarma(horas_alarma, minutos_alarma, tono_alarma, nombre_alarma, repetir_alarma)
+
+
+    # Función para limpiar los campos de entrada de la alarma
+    def clear_alarm_fields(self):
+        self.lineEdit_Horas_Alarm.setText("00")
+        self.lineEdit_Minutos_Alarm.setText("00")
+        self.comboBoxTonosAlarma_Alarm.setCurrentIndex(0)
+        self.lineEdit_NombreAlarm.clear()
+        self.comboBoxRepetirAlarm.setCurrentIndex(0)
+
+    #CONFIGURACIÓN DE ERRORES
+    def show_error_message(self, title, message):
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Warning)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(message)
+        msg_box.exec()
+
+    def show_notification(self, message):
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Information)
+        msg_box.setWindowTitle("Notificación")
+        msg_box.setText(message)
+        msg_box.exec()

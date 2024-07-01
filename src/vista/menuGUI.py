@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QGridLayout,
     QLayout, QLineEdit, QMainWindow, QPushButton,
     QSizePolicy, QSpacerItem, QSpinBox, QStackedWidget,
     QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
-import src.vista.recursos_rc
+import Proyecto_Tempolarm.src.vista.recursos_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
