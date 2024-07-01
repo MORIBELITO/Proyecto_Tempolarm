@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>770</width>
-    <height>678</height>
+    <height>681</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1157,8 +1157,8 @@ color: rgb(0, 0, 0);</string>
                  <widget class="QComboBox" name="comboBoxtonoAlarmaPom">
                   <property name="styleSheet">
                    <string notr="true">background-color: rgb(186, 75, 38);
-font: 8pt &quot;Century Gothic&quot;;
-color: rgb(0, 0, 0);</string>
+font: 75 9pt &quot;Century Gothic&quot;;
+color: rgb(255, 255, 255);</string>
                   </property>
                  </widget>
                 </item>
@@ -1377,20 +1377,11 @@ background-color: rgb(111, 1, 1);</string>
                </layout>
               </item>
               <item>
-               <spacer name="verticalSpacer_26">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
+               <widget class="QLabel" name="label_26">
+                <property name="text">
+                 <string>Formato en 24 horas:</string>
                 </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::Minimum</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>10</height>
-                 </size>
-                </property>
-               </spacer>
+               </widget>
               </item>
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_25">
@@ -1406,6 +1397,17 @@ background-color: rgb(111, 1, 1);</string>
                 <property name="rightMargin">
                  <number>35</number>
                 </property>
+                <item>
+                 <widget class="QLabel" name="Formato_am_pm">
+                  <property name="styleSheet">
+                   <string notr="true">text-align:center;
+font: 75 36pt &quot;Century Gothic&quot;;</string>
+                  </property>
+                  <property name="text">
+                   <string>AM</string>
+                  </property>
+                 </widget>
+                </item>
                 <item>
                  <spacer name="horizontalSpacer_10">
                   <property name="orientation">
@@ -1745,7 +1747,7 @@ background-color: rgb(59, 0, 29);</string>
            <item>
             <widget class="QTableWidget" name="tableRegistro">
              <attribute name="horizontalHeaderVisible">
-              <bool>true</bool>
+              <bool>false</bool>
              </attribute>
              <attribute name="horizontalHeaderDefaultSectionSize">
               <number>125</number>
@@ -2002,7 +2004,7 @@ color: rgb(255, 255, 255);</string>
            <item>
             <widget class="QGroupBox" name="groupBox_4">
              <property name="title">
-              <string>Editar</string>
+              <string>Nuevo</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
               <item>
@@ -2084,6 +2086,9 @@ color: rgb(0, 0, 0);</string>
                    <string notr="true">background-color: rgb(244, 244, 244);
 font: 75 11pt &quot;Century Gothic&quot;;
 color: rgb(0, 0, 0);</string>
+                  </property>
+                  <property name="echoMode">
+                   <enum>QLineEdit::Password</enum>
                   </property>
                  </widget>
                 </item>

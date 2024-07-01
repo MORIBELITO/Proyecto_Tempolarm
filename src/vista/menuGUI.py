@@ -26,7 +26,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(770, 678)
+        MainWindow.resize(770, 681)
         MainWindow.setStyleSheet(u"background-color: rgb(25, 25, 25);\n"
 "color: rgb(255, 255, 255);")
         self.centralwidget = QWidget(MainWindow)
@@ -618,8 +618,8 @@ class Ui_MainWindow(object):
         self.comboBoxtonoAlarmaPom = QComboBox(self.groupBox_11)
         self.comboBoxtonoAlarmaPom.setObjectName(u"comboBoxtonoAlarmaPom")
         self.comboBoxtonoAlarmaPom.setStyleSheet(u"background-color: rgb(186, 75, 38);\n"
-"font: 8pt \"Century Gothic\";\n"
-"color: rgb(0, 0, 0);")
+"font: 75 9pt \"Century Gothic\";\n"
+"color: rgb(255, 255, 255);")
 
         self.horizontalLayout_22.addWidget(self.comboBoxtonoAlarmaPom)
 
@@ -744,14 +744,22 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_24.addLayout(self.horizontalLayout_24)
 
-        self.verticalSpacer_26 = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        self.label_26 = QLabel(self.groupBox_13)
+        self.label_26.setObjectName(u"label_26")
 
-        self.verticalLayout_24.addItem(self.verticalSpacer_26)
+        self.verticalLayout_24.addWidget(self.label_26)
 
         self.horizontalLayout_25 = QHBoxLayout()
         self.horizontalLayout_25.setSpacing(0)
         self.horizontalLayout_25.setObjectName(u"horizontalLayout_25")
         self.horizontalLayout_25.setContentsMargins(36, 0, 35, -1)
+        self.Formato_am_pm = QLabel(self.groupBox_13)
+        self.Formato_am_pm.setObjectName(u"Formato_am_pm")
+        self.Formato_am_pm.setStyleSheet(u"text-align:center;\n"
+"font: 75 36pt \"Century Gothic\";")
+
+        self.horizontalLayout_25.addWidget(self.Formato_am_pm)
+
         self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_25.addItem(self.horizontalSpacer_10)
@@ -923,7 +931,7 @@ class Ui_MainWindow(object):
         __qtablewidgetitem3 = QTableWidgetItem()
         self.tableRegistro.setHorizontalHeaderItem(3, __qtablewidgetitem3)
         self.tableRegistro.setObjectName(u"tableRegistro")
-        self.tableRegistro.horizontalHeader().setVisible(True)
+        self.tableRegistro.horizontalHeader().setVisible(False)
         self.tableRegistro.horizontalHeader().setDefaultSectionSize(125)
         self.tableRegistro.horizontalHeader().setStretchLastSection(True)
 
@@ -1114,6 +1122,7 @@ class Ui_MainWindow(object):
         self.lineEdit_Pass.setStyleSheet(u"background-color: rgb(244, 244, 244);\n"
 "font: 75 11pt \"Century Gothic\";\n"
 "color: rgb(0, 0, 0);")
+        self.lineEdit_Pass.setEchoMode(QLineEdit.Password)
 
         self.horizontalLayout_8.addWidget(self.lineEdit_Pass)
 
@@ -1606,6 +1615,8 @@ class Ui_MainWindow(object):
         self.groupBox_13.setTitle("")
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"HORAS", None))
         self.label_36.setText(QCoreApplication.translate("MainWindow", u"MINUTOS", None))
+        self.label_26.setText(QCoreApplication.translate("MainWindow", u"Formato en 24 horas:", None))
+        self.Formato_am_pm.setText(QCoreApplication.translate("MainWindow", u"AM", None))
         self.lineEdit_Horas_Alarm.setText(QCoreApplication.translate("MainWindow", u"00", None))
         self.lblseparador_8.setText(QCoreApplication.translate("MainWindow", u":", None))
         self.lineEdit_Minutos_Alarm.setText(QCoreApplication.translate("MainWindow", u"00", None))
@@ -1638,7 +1649,7 @@ class Ui_MainWindow(object):
         self.lblcorreo.setText("")
         self.label_13.setText(QCoreApplication.translate("MainWindow", u"TELEFONO:", None))
         self.lblTelefono.setText("")
-        self.groupBox_4.setTitle(QCoreApplication.translate("MainWindow", u"Editar", None))
+        self.groupBox_4.setTitle(QCoreApplication.translate("MainWindow", u"Nuevo", None))
         self.label_16.setText(QCoreApplication.translate("MainWindow", u"USUARIO:", None))
         self.label_20.setText(QCoreApplication.translate("MainWindow", u"CONTRASE\u00d1A:", None))
         self.label_17.setText(QCoreApplication.translate("MainWindow", u"CORREO:", None))
