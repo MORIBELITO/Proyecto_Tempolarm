@@ -5,7 +5,7 @@ from PySide6.QtGui import QIntValidator
 from Proyecto_Tempolarm.src.logica.db_model import crear_usuario, obtener_usuarios, borrar_usuario
 from Proyecto_Tempolarm.src.logica.db_model import crear_temporizador, obtener_temporizadores
 from Proyecto_Tempolarm.src.logica.db_model import crear_pomodoro, obtener_pomodoros
-from Proyecto_Tempolarm.src.logica.db_model import crear_alarma, obtener_alarmas
+from Proyecto_Tempolarm.src.logica.db_model import crear_alarma, obtener_alarmas, obtener_todos_los_registros
 
 class Mysidebar(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -20,13 +20,61 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         self.btn_Iniciar_Temp.clicked.connect(self.start_timer)
         self.btn_Pausa_Temp.clicked.connect(self.pause_timer)
         self.btn_Reiniciar_Temp.clicked.connect(self.reset_timer)
+        self.btn_Guardar_Temp.clicked.connect(self.save_timer)
+        self.btn_Limpiar_Temp.clicked.connect(self.clear_fields)
 
+        # Cargar configuraciones guardadas en el comboBox
+        self.load_saved_configs()
+        self.comboBoxConfigGuardadasTemp.currentIndexChanged.connect(self.load_selected_config)
 
         # Conexiones para Pomodoro
+
+        # Cargar configuraciones guardadas en el comboBox
+        self.load_saved_configs_Pom()
+        self.comboBoxConfigGuardadasPom.currentIndexChanged.connect(self.load_selected_config_Pom)
 
         self.btn_Iniciar_Pom.clicked.connect(self.start_pomodoro)
         self.btn_Pausa_Pom.clicked.connect(self.pause_pomodoro)
         self.btn_Reiniciar_Pom.clicked.connect(self.reset_pomodoro)
+
+        # Configurar botones
+        self.btn_Guardar_Pom.clicked.connect(self.save_pomodoro)
+        self.btn_Limpiar_Pom.clicked.connect(self.clear_pomodoro_fields)
+
+        ##CONEXIONES ALARMA
+
+        # Conectar los botones a sus funciones
+        self.btn_Guardar_Alarm.clicked.connect(self.save_alarm)
+        self.btn_Limpiar_Alarm.clicked.connect(self.clear_alarm_fields)
+
+        # Conectar botones Usuario
+        self.btn_GuardarUser.clicked.connect(self.guardar_usuario)
+        self.btn_BorrarUser.clicked.connect(self.borrar_usuario_seleccionado)
+        self.comboBox_SelectUser.currentIndexChanged.connect(self.mostrar_usuario_seleccionado)
+        # Llenar el ComboBox con los nombres de usuario existentes
+        self.actualizar_combo_usuarios()
+
+        ##CONF TABLA
+
+        self.btn_Actualizar.clicked.connect(self.load_table_registro)
+
+        # Cargar registros en la tabla
+        self.load_table_registro()
+
+        # Aplicar estilo a la cabecera de la tabla
+        self.tableRegistro.horizontalHeader().setStyleSheet("""
+            QHeaderView::section {
+                background-color: black;
+                color: white;
+            }
+        """)
+
+        self.tableRegistro.verticalHeader().setStyleSheet("""
+            QHeaderView::section {
+                background-color: black;
+                color: white;
+            }
+        """)
 
         # Conexiones de botones para cambiar de página
         self.btn_Inicio.clicked.connect(self.switch_to_Inicio_page)
@@ -393,6 +441,45 @@ class Mysidebar(QMainWindow, Ui_MainWindow):
         msg_box.setWindowTitle("Notificación")
         msg_box.setText(message)
         msg_box.exec()
+
+
+    ##TABLAS
+
+    # Función para cargar todos los registros en la tabla
+    def load_table_registro(self):
+        # Obtener todos los registros de la base de datos
+        temporizadores, pomodoros, alarmas = obtener_todos_los_registros()
+
+        # Limpiar la tabla
+        self.tableRegistro.setRowCount(0)
+
+        # Agregar registros de temporizadores
+        for temp in temporizadores:
+            row_position = self.tableRegistro.rowCount()
+            self.tableRegistro.insertRow(row_position)
+            self.tableRegistro.setItem(row_position, 0, QTableWidgetItem(temp.nombre))
+            self.tableRegistro.setItem(row_position, 1, QTableWidgetItem(f"{temp.horas}:{temp.minutos}:{temp.segundos}"))
+            self.tableRegistro.setItem(row_position, 2, QTableWidgetItem(temp.tono))
+            self.tableRegistro.setItem(row_position, 3, QTableWidgetItem("No"))
+
+        # Agregar registros de pomodoros
+        for pomo in pomodoros:
+            row_position = self.tableRegistro.rowCount()
+            self.tableRegistro.insertRow(row_position)
+            self.tableRegistro.setItem(row_position, 0, QTableWidgetItem(pomo.nombre))
+            self.tableRegistro.setItem(row_position, 1, QTableWidgetItem(f"{pomo.minutos_pomodoro}:{pomo.segundos_pomodoro}"))
+            self.tableRegistro.setItem(row_position, 2, QTableWidgetItem(pomo.tono_alarma))
+            self.tableRegistro.setItem(row_position, 3, QTableWidgetItem("No"))
+
+        # Agregar registros de alarmas
+        for alarm in alarmas:
+            row_position = self.tableRegistro.rowCount()
+            self.tableRegistro.insertRow(row_position)
+            self.tableRegistro.setItem(row_position, 0, QTableWidgetItem(alarm.nombre))
+            self.tableRegistro.setItem(row_position, 1, QTableWidgetItem(f"{alarm.horas}:{alarm.minutos}"))
+            self.tableRegistro.setItem(row_position, 2, QTableWidgetItem(alarm.tono))
+            self.tableRegistro.setItem(row_position, 3, QTableWidgetItem(alarm.repetir))
+
 
 
     ##CONFIGURACION USUARIO

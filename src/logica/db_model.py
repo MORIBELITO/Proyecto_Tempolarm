@@ -190,3 +190,16 @@ def borrar_alarma(nombre):
     else:
         session.close()
         raise Exception(f"No se encontró la alarma con nombre '{nombre}' en la base de datos.")
+
+
+def obtener_todos_los_registros():
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    temporizadores = session.query(Temporizador).all()
+    pomodoros = session.query(Pomodoro).all()
+    alarmas = session.query(Alarma).all()
+
+    session.close()
+
+    return temporizadores, pomodoros, alarmas
